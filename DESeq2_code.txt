@@ -1,0 +1,30 @@
+library("DESeq2")
+readcounts <- read.table("all.counts", header = TRUE)
+
+readcounts[readcounts == 0] <- 1
+
+row.names(readcounts) <- gsub("-", ".", readcounts$Geneid)
+
+readcounts <- readcounts[,-c(1:6)]
+
+names(readcounts) <- c("sample_10","sample_11","sample_12","sample_13","sample_14","sample_15","sample_16","sample_17","sample_18","sample_19","sample_1","sample_20","sample_21","sample_22","sample_23","sample_24","sample_25","sample_26","sample_27","sample_28","sample_29","sample_2","sample_30","sample_31","sample_35","sample_36","sample_37","sample_38","sample_39","sample_3","sample_40","sample_41","sample_4","sample_5","sample_6","sample_7","sample_8","sample_9")
+
+colData <- read.table("/Users/prasath/Desktop/Gonzalez_lab/Gene_expression_data/bd_metadata.txt",header =T)
+colData <- colData[,c("LPA_group","sample_number")]
+colData$sample_number <- factor(colData$sample_number)
+colData$LPA_group <- factor(colData$LPA_group)
+
+ds <- DESeqDataSetFromMatrix(countData = readcounts, colData = colData,design = ~ LPA_group)
+ds <- ds[rowSums(counts(ds)) >= 10,]
+
+ds <- DESeq(ds)
+
+# Creating MA plot to represent Fold-change against mean expression values
+plotMA(DESeq.ds, alpha = 0.05)
+#Transformation of count data to facilitate visualisation
+deseq_transform <- vst(DESeq.ds, blind=FALSE)
+#Plotting Principal components based on sample condition
+plotPCA(deseq_transform, intgroup = 'LPA_group')
+
+Without pseudo counts:
+ds <- DESeq(ds)estimating size factorsError in estimateSizeFactorsForMatrix(counts(object), locfunc = locfunc,  :   every gene contains at least one zero, cannot compute log geometric means
